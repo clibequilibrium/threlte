@@ -1,11 +1,5 @@
 <script lang="ts">
-  import {
-    createRawEventDispatcher,
-    forwardEventHandlers,
-    T,
-    useTask,
-    useThrelte
-  } from '@threlte/core'
+  import { forwardEventHandlers, T, useTask, useThrelte } from '@threlte/core'
   import {
     Vector3,
     Group,
@@ -17,7 +11,6 @@
     PerspectiveCamera,
     Matrix4
   } from 'three'
-  import { useHasEventListeners } from '../../hooks/useHasEventListeners'
   import {
     defaultCalculatePosition,
     epsilon,
@@ -30,7 +23,7 @@
     objectZIndex
   } from './utils'
   import type { HTMLEvents, HTMLProps, HTMLSlots } from './HTML.svelte'
-  import VertexShader from './vertex'
+  import { logVertex, logFragment, spriteVertex } from './shaders'
 
   type $$Props = HTMLProps
   type $$PropsWithDefaults = Required<$$Props>
@@ -75,7 +68,6 @@
   const raycaster = new Raycaster()
 
   $: pos = calculatePosition(ref, camera.current, $size)
-  $: vertexShader = transform ? undefined : VertexShader
 
   $: isRayCastOcclusion =
     (occlude && occlude !== 'blending') || (Array.isArray(occlude) && occlude.length > 0)
@@ -258,26 +250,6 @@
   }
 
   const component = forwardEventHandlers()
-
-  const logVertex = `
-#include <common>
-#include <logdepthbuf_pars_vertex>
-void main() {
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-    #include <logdepthbuf_vertex>
-}
-`
-
-  const logFragment = `
-#include <logdepthbuf_pars_fragment>
-
-void main() {
-
-	#include <logdepthbuf_fragment>
-	gl_FragColor = vec4(0.0,0.0,0.0,0.0);
-	
-}
-`
 </script>
 
 <T
@@ -303,8 +275,8 @@ void main() {
       {:else if !transform}
         <T.ShaderMaterial
           side={DoubleSide}
-          {vertexShader}
-          fragmentShader={`void main(){ gl_FragColor=vec4(0.0, 0.0, 0.0, 0.0); }`}
+          vertexShader={spriteVertex}
+          fragmentShader={logFragment}
         />
       {:else}
         <T.ShaderMaterial
@@ -356,6 +328,7 @@ void main() {
   {:else}
     <div
       style:position="absolute"
+      style:pointer-events={pointerEvents}
       style:transform={center ? 'translate3d(-50%,-50%,0)' : 'none'}
       style:top={fullscreen ? `${-height / 2}px` : undefined}
       style:left={fullscreen ? `${-width / 2}px` : undefined}
