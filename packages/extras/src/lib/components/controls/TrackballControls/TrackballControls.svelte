@@ -29,7 +29,7 @@
     throw new Error('Parent missing: <TrackballControls> need to be a child of a <Camera>')
   }
 
-  export const ref = new ThreeTrackballControls($parent, renderer.domElement)
+  export const ref = new ThreeTrackballControls($parent, renderer.domElement.parentElement!)
 
   useTask(ref.update, {
     autoInvalidate: false
