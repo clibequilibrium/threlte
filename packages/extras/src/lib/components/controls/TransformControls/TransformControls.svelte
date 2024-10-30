@@ -74,7 +74,7 @@
   export const group = new Group()
 
   const controlsStore = derived(camera, (camera) => {
-    return new TransformControls(camera, renderer.domElement)
+    return new TransformControls(camera, renderer.domElement.parentElement!)
   })
 
   export let controls = $controlsStore

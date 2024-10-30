@@ -29,7 +29,7 @@
     throw new Error('Parent missing: <OrbitControls> need to be a child of a <Camera>')
   }
 
-  export const ref = new ThreeOrbitControls($parent, renderer.domElement)
+  export const ref = new ThreeOrbitControls($parent, renderer.domElement.parentElement!)
 
   const { start, stop } = useTask(ref.update, {
     autoStart: false,
